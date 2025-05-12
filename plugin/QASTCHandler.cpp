@@ -26,8 +26,8 @@ struct QASTCHandler::Header
 
 QASTCHandler::QASTCHandler()
 	: mQuality(-1)
-	, mBlockWidth(4)
-	, mBlockHeight(4)
+    , mBlockWidth(5)
+    , mBlockHeight(5) //Default is 4x4
 {
 }
 
@@ -66,6 +66,7 @@ bool QASTCHandler::canRead() const
 
 bool QASTCHandler::read(QImage *image)
 {
+	// qDebug() << "[QASTC] Read called. Creating image.";
 	if (!validateHeader(device()))
 		return false;
 
@@ -96,7 +97,7 @@ bool QASTCHandler::read(QImage *image)
 
 	auto buffer = dstCodecBuffer.take();
 	*image = QImage(buffer->GetData(), header.xsize, header.ysize,
-		QImage::Format_RGBA8888, &QASTCHandler::QImageTextureCleanup, buffer);
+        QImage::Format_RGBA8888, &QASTCHandler::QImageTextureCleanup, buffer).mirrored(false, true);
 	return true;
 }
 
@@ -115,6 +116,9 @@ bool QASTCHandler::write(const QImage &image)
 	auto img = image;
 	if (img.format() != QImage::Format_RGBA8888)
 		img = img.convertToFormat(QImage::Format_RGBA8888);
+
+    // 🔁 Flip vertically to match decoder behavior
+    img = img.mirrored(false, true);
 
 	QScopedPointer<CCodecBuffer> srcCodecBuffer(CreateCodecBuffer(CBT_RGBA8888,
 		0, 0, 0, img.width(), img.height(), img.bytesPerLine(), img.bits()));

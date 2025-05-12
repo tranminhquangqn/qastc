@@ -26,6 +26,8 @@
 #include <cmath>
 #include <algorithm>
 #include <vector>
+#include <cstdio>
+
 
 using namespace std;
 
